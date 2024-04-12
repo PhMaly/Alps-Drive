@@ -1,3 +1,5 @@
+const fs = require("node:fs");
+
 function start() {
     const express = require('express');
     const app = express();
@@ -18,5 +20,24 @@ function start() {
         next();
     })
 
+
+    function getFolder() {
+        app.get('/api/drive', async (req, res) => {
+            const files = await fs.promises.readdir('./', {withFileTypes: true});
+            const filesFormat = files.map(file => {
+                return obj = {
+                    name: file.name,
+                    isFolder: file.isDirectory(),
+                }
+            })
+
+
+            res.send(filesFormat)
+
+        });
+    }
+    getFolder();
+
 }
+
 module.exports = start;
