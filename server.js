@@ -1,9 +1,14 @@
 const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
+
 
 function start() {
     const express = require('express');
     const app = express();
     const port = 3000;
+    const racinePath = path.join(os.tmpdir(), 'newFolder')
+    console.log(racinePath)
 
     app.get('/', (req, res) => {
         res.send('Hello World!');
@@ -20,23 +25,24 @@ function start() {
         next();
     })
 
+    app.get('/api/drive', async (req, res) => {
+        const arrayResponse = [];
 
-    function getFolder() {
-        app.get('/api/drive', async (req, res) => {
-            const files = await fs.promises.readdir('./', {withFileTypes: true});
-            const filesFormat = files.map(file => {
-                return obj = {
-                    name: file.name,
-                    isFolder: file.isDirectory(),
-                }
-            })
+        const files = await fs.promises.readdir(racinePath, {withFileTypes:true})
+        for (const file of files) {
+            const stats = await fs.promises.stat(path.join(file.path, file.name));
+            let objTemp = {};
+            objTemp = {
+                name : file.name,
+                isFolder: file.isDirectory(),
+                size: stats.size
+            }
+            arrayResponse.push(objTemp)
+        }
 
+        return res.status(200).send(arrayResponse)
 
-            res.send(filesFormat)
-
-        });
-    }
-    getFolder();
+    })
 
 }
 
