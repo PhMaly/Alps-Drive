@@ -8,7 +8,7 @@ function start() {
     const app = express();
     const port = 3000;
     const racinePath = path.join(os.tmpdir(), 'newFolder')
-    console.log(racinePath)
+
 
     app.get('/', (req, res) => {
         res.send('Hello World!');
@@ -26,12 +26,11 @@ function start() {
     })
 
 
-    async function showFolder(res) {
-        try {
+    async function showFolder(drivePath) {
             const arrayResponse = [];
 
-            const files = await fs.promises.readdir(racinePath, {withFileTypes: true})
-            for (const file of files) {
+        const files = await fs.promises.readdir(drivePath, {withFileTypes: true})
+        for (const file of files) {
                 const stats = await fs.promises.stat(path.join(file.path, file.name));
                 let objTemp = {};
                 objTemp = {
@@ -41,19 +40,37 @@ function start() {
                 }
                 arrayResponse.push(objTemp)
             }
-            return res.status(200).send(arrayResponse)
-
-        } catch (error) {
-            return res.status(404).send('Not found')
-        }
+            return arrayResponse
     }
 
-    app.get('/api/drive',(req, res) => {
-         showFolder(res)
+    app.get('/api/drive', async (req, res) => {
+
+        const files = await showFolder(racinePath)
+        return res.status(200).send(files)
+
     })
 
 
-    
+    app.get('/api/drive/:name', async (req, res) => {
+
+        const name = req.params.name;
+        const stats = await fs.promises.stat(path.join(racinePath, name));
+
+
+        if (stats.isDirectory()) {
+
+            const files = await showFolder(path.join(racinePath, name))
+
+            res.status(200).send(files)
+
+        } else {
+            res.sendFile(path.join(racinePath, name))
+        }
+
+
+    })
+
+
 
 }
 
