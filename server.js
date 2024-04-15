@@ -25,24 +25,35 @@ function start() {
         next();
     })
 
-    app.get('/api/drive', async (req, res) => {
-        const arrayResponse = [];
 
-        const files = await fs.promises.readdir(racinePath, {withFileTypes:true})
-        for (const file of files) {
-            const stats = await fs.promises.stat(path.join(file.path, file.name));
-            let objTemp = {};
-            objTemp = {
-                name : file.name,
-                isFolder: file.isDirectory(),
-                size: stats.size
+    async function showFolder(res) {
+        try {
+            const arrayResponse = [];
+
+            const files = await fs.promises.readdir(racinePath, {withFileTypes: true})
+            for (const file of files) {
+                const stats = await fs.promises.stat(path.join(file.path, file.name));
+                let objTemp = {};
+                objTemp = {
+                    name: file.name,
+                    isFolder: file.isDirectory(),
+                    size: stats.size
+                }
+                arrayResponse.push(objTemp)
             }
-            arrayResponse.push(objTemp)
+            return res.status(200).send(arrayResponse)
+
+        } catch (error) {
+            return res.status(404).send('Not found')
         }
+    }
 
-        return res.status(200).send(arrayResponse)
-
+    app.get('/api/drive',(req, res) => {
+         showFolder(res)
     })
+
+
+    
 
 }
 
