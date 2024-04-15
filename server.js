@@ -27,20 +27,20 @@ function start() {
 
 
     async function showFolder(drivePath) {
-            const arrayResponse = [];
+        const arrayResponse = [];
 
         const files = await fs.promises.readdir(drivePath, {withFileTypes: true})
         for (const file of files) {
-                const stats = await fs.promises.stat(path.join(file.path, file.name));
-                let objTemp = {};
-                objTemp = {
-                    name: file.name,
-                    isFolder: file.isDirectory(),
-                    size: stats.size
-                }
-                arrayResponse.push(objTemp)
+            const stats = await fs.promises.stat(path.join(file.path, file.name));
+            let objTemp = {};
+            objTemp = {
+                name: file.name,
+                isFolder: file.isDirectory(),
+                size: stats.size
             }
-            return arrayResponse
+            arrayResponse.push(objTemp)
+        }
+        return arrayResponse
     }
 
     app.get('/api/drive', async (req, res) => {
@@ -52,24 +52,26 @@ function start() {
 
 
     app.get('/api/drive/:name', async (req, res) => {
+        try {
+            const name = req.params.name;
+            const stats = await fs.promises.stat(path.join(racinePath, name));
 
-        const name = req.params.name;
-        const stats = await fs.promises.stat(path.join(racinePath, name));
 
+            if (stats.isDirectory()) {
 
-        if (stats.isDirectory()) {
+                const files = await showFolder(path.join(racinePath, name))
 
-            const files = await showFolder(path.join(racinePath, name))
+                res.status(200).send(files)
 
-            res.status(200).send(files)
-
-        } else {
-            res.sendFile(path.join(racinePath, name))
+            } else {
+                res.sendFile(path.join(racinePath, name))
+            }
+        } catch (error) {
+            res.status(404).send('Not Found')
         }
 
 
     })
-
 
 
 }
