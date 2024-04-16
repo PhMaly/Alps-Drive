@@ -107,7 +107,19 @@ function start() {
 
     });
 
-    
+    app.delete(`/api/drive/:name`, async (req, res) => {
+        const name = req.params.name
+        const myRegex = /^[a-zA-Z]+$/;
+
+        if (myRegex.test(name)) {
+            if (myRegex.test(name) === false) {
+                res.status(400).send('Ne dois comporter que des lettres et des tirets')
+            } else {
+                await fs.promises.rmdir(path.join(racinePath, name))
+                return res.sendStatus(200);
+            }
+        }
+    });
 
 }
 
