@@ -52,11 +52,10 @@ function start() {
 
 
     app.get('/api/drive/:name', async (req, res) => {
+        const name = req.params.name;
+        const stats = await fs.promises.stat(path.join(racinePath, name));
+
         try {
-            const name = req.params.name;
-            const stats = await fs.promises.stat(path.join(racinePath, name));
-
-
             if (stats.isDirectory()) {
 
                 const files = await showFolder(path.join(racinePath, name))
@@ -69,10 +68,25 @@ function start() {
         } catch (error) {
             res.status(404).send('Not Found')
         }
-
-
     })
 
+    app.post(`/api/drive/`, async (req, res) => {
+        const name = req.query.name;
+        const myRegex = /^[a-zA-Z]+$/;
+
+        try {
+            if (myRegex.test(name) === false){
+                res.status(400).send('Ne dois comporter que des lettres et des tirets')
+            } else {
+                const folder = path.join(racinePath, name)
+                await fs.promises.mkdir(folder);
+                return res.sendStatus(201);
+            }
+        } catch (error) {
+            return res.status(500).send(`Cannot create the folder: ${error}`);
+        }
+
+    })
 
 }
 
