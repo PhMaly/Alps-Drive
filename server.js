@@ -121,6 +121,23 @@ function start() {
         }
     });
 
+    app.delete(`/api/drive/:folder/:name`, async (req, res)=>{
+        const folder = req.params.folder;
+        const name = req.params.name;
+        const myRegex = /^[a-zA-Z]+$/;
+
+        try {
+            if (myRegex.test(name) === false) {
+                res.status(400).send('Ne dois comporter que des lettres et des tirets')
+            } else {
+                await fs.promises.rmdir(path.join(racinePath, folder, name))
+                return res.sendStatus(200);
+            }
+        } catch (error) {
+            return res.status(404).send(`${error} n'existe pas`);
+        }
+    });
+
 }
 
 module.exports = start;
