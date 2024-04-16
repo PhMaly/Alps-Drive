@@ -12,18 +12,18 @@ function start() {
 
     app.get('/', (req, res) => {
         res.send('Hello World!');
-    })
+    });
 
     app.listen(port, () => {
         console.log('Got it !');
-    })
+    });
 
     app.use(function (req, res, next) {
         res.setHeader("Access-Control-Allow-Origin", "*");
         res.setHeader('Access-Control-Allow-Methods', '*');
         res.setHeader("Access-Control-Allow-Headers", "*");
         next();
-    })
+    });
 
 
     async function showFolder(drivePath) {
@@ -48,7 +48,7 @@ function start() {
         const files = await showFolder(racinePath)
         return res.status(200).send(files)
 
-    })
+    });
 
 
     app.get('/api/drive/:name', async (req, res) => {
@@ -68,14 +68,14 @@ function start() {
         } catch (error) {
             res.status(404).send('Not Found')
         }
-    })
+    });
 
     app.post(`/api/drive/`, async (req, res) => {
         const name = req.query.name;
         const myRegex = /^[a-zA-Z]+$/;
 
         try {
-            if (myRegex.test(name) === false){
+            if (myRegex.test(name) === false) {
                 res.status(400).send('Ne dois comporter que des lettres et des tirets')
             } else {
                 const folder = path.join(racinePath, name)
@@ -86,7 +86,28 @@ function start() {
             return res.status(500).send(`Cannot create the folder: ${error}`);
         }
 
-    })
+    });
+
+    app.post(`/api/drive/:folder`, async (req, res) => {
+        const folder = req.params.folder;
+        const name = req.query.name;
+        const myRegex = /^[a-zA-Z]+$/;
+
+        try {
+            if (myRegex.test(name) === false) {
+                res.status(400).send('Ne dois comporter que des lettres et des tirets')
+            } else {
+                const pathFolder = path.join(racinePath, folder, name);
+                await fs.promises.mkdir(pathFolder);
+                return res.sendStatus(201);
+            }
+        } catch (error) {
+            return res.status(404).send(`${error} n'existe pas`);
+        }
+
+    });
+
+    
 
 }
 
