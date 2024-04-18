@@ -52,6 +52,21 @@ function start() {
         return arrayResponse
     }
 
+    async function deleteFiles(pathDelete){
+
+        if (await isAFile(pathDelete)) {
+            await fs.promises.unlink(pathDelete)
+
+        } else {
+            await fs.promises.rmdir(pathDelete, { recursive: true })
+        }
+    }
+
+    async function isAFile(fileChecking){
+        const stats = await fs.promises.stat(fileChecking);
+        return stats.isFile();
+    }
+
     app.get('/api/drive', async (req, res) => {
 
         const files = await showFolder(racinePath)
@@ -99,6 +114,7 @@ function start() {
 
     app.post(`/api/drive/:folder`, async (req, res) => {
         const folder = req.params.folder;
+
         const name = req.query.name;
         const myRegex = /^[a-zA-Z]+$/;
 
@@ -117,44 +133,35 @@ function start() {
     });
 
     app.delete(`/api/drive/:name`, async (req, res) => {
-
         const name = req.params.name
-        const stats = await fs.promises.stat(path.join(racinePath, name));
+        const pathDelete = path.join(racinePath, name);
+
 
         try {
-            if (stats.isFile()) {
-                await fs.promises.unlink(path.join(racinePath, name))
-
-            } else {
-                await fs.promises.rmdir(path.join(racinePath, name))
-            }
+            await deleteFiles(pathDelete);
             return res.sendStatus(200);
 
         } catch (error) {
             return res.status(404).send(`${error} n'existe pas`)
         }
 
-
     });
 
     app.delete(`/api/drive/:folder/:name`, async (req, res) => {
         const folder = req.params.folder;
         const name = req.params.name;
-        const stats = await fs.promises.stat(path.join(racinePath, folder, name));
+        const pathDelete = path.join(racinePath, folder, name);
 
         try {
-            if (stats.isFile()) {
-                await fs.promises.unlink(path.join(racinePath, folder, name))
-
-            } else {
-                await fs.promises.rmdir(path.join(racinePath, folder, name))
-            }
+            await deleteFiles(pathDelete);
             return res.sendStatus(200);
 
         } catch (error) {
-            return res.status(404).send(`${error} n'existe pas`);
+            return res.status(404).send(`${error} n'existe pas`)
         }
     });
+
+    
 
     app.put('/api/drive', async (req, res) => {
         try {
@@ -170,8 +177,6 @@ function start() {
         } catch (error) {
             return res.status(500).send(`${error} `);
         }
-
-
     });
 
     app.put('/api/drive/:folder', async (req, res) => {
