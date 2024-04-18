@@ -131,7 +131,7 @@ function start() {
             return res.sendStatus(200);
 
         } catch (error) {
-            return res.status(400).send(`${error} n'existe pas`)
+            return res.status(404).send(`${error} n'existe pas`)
         }
 
 
@@ -166,6 +166,25 @@ function start() {
         } else {
             return res.sendStatus(400);
         }
+
+    });
+
+    app.put('/api/drive/:folder', async (req, res) => {
+        const folder = req.params.folder;
+
+        try {
+            if (!req.exists) {
+                const uploadRequest = req.files.file.file;
+                const fileNameUpload = path.join(racinePath, folder, req.files.file.filename)
+                await fs.promises.rename(uploadRequest, fileNameUpload)
+                return res.sendStatus(201)
+            } else {
+                return res.sendStatus(400);
+            }
+        } catch (error) {
+            return res.status(404).send(`${error} n'existe pas`);
+        }
+
 
     });
 
