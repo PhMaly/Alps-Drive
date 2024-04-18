@@ -132,36 +132,16 @@ function start() {
 
     });
 
-    app.delete(`/api/drive/:name`, async (req, res) => {
-        const name = req.params.name
-        const pathDelete = path.join(racinePath, name);
-
-
+    app.delete("/api/drive/*", async (req, res) => {
+        const pathDelete= path.join(racinePath, req.params[0]);
         try {
-            await deleteFiles(pathDelete);
-            return res.sendStatus(200);
+                    await deleteFiles(pathDelete);
+                    return res.sendStatus(200);
 
-        } catch (error) {
-            return res.status(404).send(`${error} n'existe pas`)
-        }
-
-    });
-
-    app.delete(`/api/drive/:folder/:name`, async (req, res) => {
-        const folder = req.params.folder;
-        const name = req.params.name;
-        const pathDelete = path.join(racinePath, folder, name);
-
-        try {
-            await deleteFiles(pathDelete);
-            return res.sendStatus(200);
-
-        } catch (error) {
-            return res.status(404).send(`${error} n'existe pas`)
-        }
-    });
-
-    
+                } catch (error) {
+                    return res.status(404).send(`${error} n'existe pas`)
+                }
+    })
 
     app.put('/api/drive', async (req, res) => {
         try {
