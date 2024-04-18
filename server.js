@@ -157,15 +157,20 @@ function start() {
     });
 
     app.put('/api/drive', async (req, res) => {
-
-        if (!req.exists) {
-            const uploadRequest = req.files.file.file;
-            const fileNameUpload = path.join(racinePath, req.files.file.filename)
-            await fs.promises.rename(uploadRequest, fileNameUpload)
-            return res.sendStatus(201)
-        } else {
-            return res.sendStatus(400);
+        try {
+            if (typeof req !== 'undefined') {
+                console.log(req)
+                const uploadRequest = req.files.file.file;
+                const fileNameUpload = path.join(racinePath, req.files.file.filename)
+                await fs.promises.rename(uploadRequest, fileNameUpload)
+                return res.sendStatus(201)
+            } else {
+                return res.sendStatus(400);
+            }
+        } catch (error) {
+            return res.status(500).send(`${error} `);
         }
+
 
     });
 
@@ -173,7 +178,7 @@ function start() {
         const folder = req.params.folder;
 
         try {
-            if (!req.exists) {
+            if (typeof req !== 'undefined') {
                 const uploadRequest = req.files.file.file;
                 const fileNameUpload = path.join(racinePath, folder, req.files.file.filename)
                 await fs.promises.rename(uploadRequest, fileNameUpload)
@@ -184,11 +189,7 @@ function start() {
         } catch (error) {
             return res.status(404).send(`${error} n'existe pas`);
         }
-
-
     });
-
-
 }
 
 module.exports = start;
