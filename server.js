@@ -71,6 +71,7 @@ function start() {
         return stats.isFile();
     }
 
+
     app.get('/api/drive', async (req, res) => {
 
         const files = await showFolder(racinePath)
@@ -126,38 +127,22 @@ function start() {
         }
     })
 
-    app.put('/api/drive', async (req, res) => {
+    app.put('/api/drive/*', async (req, res) => {
         try {
             if (typeof req !== 'undefined') {
-                console.log(req)
                 const uploadRequest = req.files.file.file;
-                const fileNameUpload = path.join(racinePath, req.files.file.filename)
-                await fs.promises.rename(uploadRequest, fileNameUpload)
+                const pathForUpload = path.join(racinePath, req.params[0], req.files.file.filename)
+
+                await fs.promises.rename(uploadRequest, pathForUpload)
                 return res.sendStatus(201)
             } else {
                 return res.sendStatus(400);
             }
+
         } catch (error) {
             return res.status(500).send(`${error} `);
         }
-    });
-
-    app.put('/api/drive/:folder', async (req, res) => {
-        const folder = req.params.folder;
-
-        try {
-            if (typeof req !== 'undefined') {
-                const uploadRequest = req.files.file.file;
-                const fileNameUpload = path.join(racinePath, folder, req.files.file.filename)
-                await fs.promises.rename(uploadRequest, fileNameUpload)
-                return res.sendStatus(201)
-            } else {
-                return res.sendStatus(400);
-            }
-        } catch (error) {
-            return res.status(404).send(`${error} n'existe pas`);
-        }
-    });
+    })
 }
 
 module.exports = start;
