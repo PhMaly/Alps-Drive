@@ -52,17 +52,21 @@ function start() {
         return arrayResponse
     }
 
-    async function deleteFiles(pathDelete){
+    async function createFolder(pathCreate) {
+        await fs.promises.mkdir(pathCreate, {recursive: true});
+    }
+
+    async function deleteFiles(pathDelete) {
 
         if (await isAFile(pathDelete)) {
             await fs.promises.unlink(pathDelete)
 
         } else {
-            await fs.promises.rmdir(pathDelete, { recursive: true })
+            await fs.promises.rmdir(pathDelete, {recursive: true})
         }
     }
 
-    async function isAFile(fileChecking){
+    async function isAFile(fileChecking) {
         const stats = await fs.promises.stat(fileChecking);
         return stats.isFile();
     }
@@ -94,53 +98,32 @@ function start() {
         }
     });
 
-    app.post(`/api/drive/`, async (req, res) => {
-        const name = req.query.name;
+    app.post(`/api/drive/*`, async (req, res) => {
+        const pathCreate = path.join(racinePath, req.params[0], req.query.name);
         const myRegex = /^[a-zA-Z]+$/;
-
         try {
-            if (myRegex.test(name) === false) {
+            if (myRegex.test(req.query.name) === false) {
                 res.status(400).send('Ne dois comporter que des lettres et des tirets')
             } else {
-                const folder = path.join(racinePath, name)
-                await fs.promises.mkdir(folder);
+                await createFolder(pathCreate);
                 return res.sendStatus(201);
             }
-        } catch (error) {
-            return res.status(500).send(`Cannot create the folder: ${error}`);
-        }
 
-    });
-
-    app.post(`/api/drive/:folder`, async (req, res) => {
-        const folder = req.params.folder;
-
-        const name = req.query.name;
-        const myRegex = /^[a-zA-Z]+$/;
-
-        try {
-            if (myRegex.test(name) === false) {
-                res.status(400).send('Ne dois comporter que des lettres et des tirets')
-            } else {
-                const pathFolder = path.join(racinePath, folder, name);
-                await fs.promises.mkdir(pathFolder);
-                return res.sendStatus(201);
-            }
         } catch (error) {
             return res.status(404).send(`${error} n'existe pas`);
         }
 
-    });
+    })
 
     app.delete("/api/drive/*", async (req, res) => {
-        const pathDelete= path.join(racinePath, req.params[0]);
+        const pathDelete = path.join(racinePath, req.params[0]);
         try {
-                    await deleteFiles(pathDelete);
-                    return res.sendStatus(200);
+            await deleteFiles(pathDelete);
+            return res.sendStatus(200);
 
-                } catch (error) {
-                    return res.status(404).send(`${error} n'existe pas`)
-                }
+        } catch (error) {
+            return res.status(404).send(`${error} n'existe pas`)
+        }
     })
 
     app.put('/api/drive', async (req, res) => {
